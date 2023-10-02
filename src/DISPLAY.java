@@ -1,6 +1,6 @@
 import bagel.*;
 
-public final class DisplayText {
+public final class DISPLAY {
     // dimensions
     private final static int WINDOW_WIDTH = ShadowDance.getWidth();
     private final static int WINDOW_HEIGHT = ShadowDance.getHeight();
