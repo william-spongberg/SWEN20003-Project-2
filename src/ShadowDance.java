@@ -15,23 +15,18 @@ public class ShadowDance extends AbstractGame {
     // window dimensions, refresh rate, title and background
     private final static int WINDOW_WIDTH = 1024;
     private final static int WINDOW_HEIGHT = 768;
-    private final static String _60 = "-60";
-    private final static String _120 = "-120";
-    private final static String REFRESH_RATE = _60;
-    /** NOTE TO MARKERS: change to _120 for 120hz **/
     private final static String GAME_TITLE = "SHADOW DANCE";
     private final Image IMAGE_BACKGROUND = new Image("res/background.png");
 
     // file level names
-    private static final String FILE_LEVEL1 = "res/levels/test1.csv";
-    private static final String FILE_LEVEL2 = "res/levels/level1.csv";
+    private static final String[] FILE_LEVEL = { "res/level/test1.csv", "res/level/test2.csv", "res/level/test3.csv" };
 
     // game logic constants
     private static final int GRADE_FRAMES = 30;
     private static final int WIN_SCORE = 150;
 
-    // display text
-    DisplayText disp = new DisplayText();
+    // display object
+    DISPLAY disp = new DISPLAY();
 
     // array list of levels, current level
     private List<Level> levels = new ArrayList<Level>();
@@ -41,7 +36,7 @@ public class ShadowDance extends AbstractGame {
     private boolean paused = false;
     private boolean started = true;
     private boolean ended = false;
-    private Boolean level_ended = false;
+    private boolean level_ended = false;
     private static boolean refresh_60 = false;
 
     // frame counter, grade frames counter, current grade, score, level number
@@ -56,17 +51,13 @@ public class ShadowDance extends AbstractGame {
         super(WINDOW_WIDTH, WINDOW_HEIGHT, GAME_TITLE);
 
         // add levels
-        this.levels.add(readCSV(FILE_LEVEL1));
-        this.levels.add(readCSV(FILE_LEVEL2));
-        // etc
+        for (String fileName : FILE_LEVEL) {
+            this.levels.add(readCSV(fileName));
+        }
     }
 
     // read csv files and create level objects
     private Level readCSV(String fileName) {
-        // if refresh rate is 60hz
-        if (fileName.contains(_60)) {
-            refresh_60 = true;
-        }
         // read csv level files from res into arraylist of arrays of strings
         List<List<String>> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
