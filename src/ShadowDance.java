@@ -1,10 +1,14 @@
-import bagel.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import bagel.AbstractGame;
+import bagel.Image;
+import bagel.Input;
+import bagel.Keys;
+import bagel.Window;
 
 /**
  * SWEN20003 Project 1, Semester 2, 2023
@@ -19,17 +23,19 @@ public class ShadowDance extends AbstractGame {
     private final Image IMAGE_BACKGROUND = new Image("res/background.png");
 
     // file level names
-    private static final String[] FILE_LEVEL = { "res/level/test1.csv", "res/level/test2.csv", "res/level/test3.csv" };
+    private static final String[] LEVEL_FILES = { "res/level/level1-60.csv", "res/level/level2-60.csv",
+            "res/level/level3-60.csv" };
 
     // game logic constants
     private static final int GRADE_FRAMES = 30;
-    private static final int WIN_SCORE = 150;
+    private static final int LOCK_FRAMES = 45;
+    private static final int WIN_SCORE = Integer.MIN_VALUE; // 150;
 
     // display object
-    DISPLAY disp = new DISPLAY();
+    private final DISPLAY disp = new DISPLAY();
 
     // array list of levels, current level
-    private List<Level> levels = new ArrayList<Level>();
+    private final List<Level> levels = new ArrayList<Level>();
     private Level currentLevel;
 
     // game logic booleans
@@ -37,177 +43,308 @@ public class ShadowDance extends AbstractGame {
     private boolean started = true;
     private boolean ended = false;
     private boolean level_ended = false;
-    private static boolean refresh_60 = false;
+    private boolean disp_lock = false;
 
-    // frame counter, grade frames counter, current grade, score, level number
+    // frame counter, frame counters, current grade/special, score, level number
     private int frame = 0;
-    private int frames_grading = 0;
+    private int grade_frames = 0;
+    private int special_frames = 0;
+    private int lock_frames = 0;
+
     private int current_grade = 0;
+    private int current_special = 0;
     private int score = 0;
     private int high_score = 0;
+
     private int level_num = 0;
+    private int high_level_num = 3; // allows any level choice for testing
 
     public ShadowDance() {
         super(WINDOW_WIDTH, WINDOW_HEIGHT, GAME_TITLE);
 
         // add levels
-        for (String fileName : FILE_LEVEL) {
+        for (final String fileName : LEVEL_FILES) {
             this.levels.add(readCSV(fileName));
         }
     }
 
-    // read csv files and create level objects
-    private Level readCSV(String fileName) {
+    // reads CSV file and returns a Level object
+    private Level readCSV(final String fileName) {
         // read csv level files from res into arraylist of arrays of strings
-        List<List<String>> records = new ArrayList<>();
+        final List<List<String>> records = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             // read until end of file
             while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                records.add(Arrays.asList(values));
+                final String[] values = line.split(",");
+                records.add(List.of(values));
             }
             // catch and print errors
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         return new Level(records);
     }
 
     // program entry point
-    public static void main(String[] args) {
-        ShadowDance game = new ShadowDance();
+    public static void main(final String[] args) {
+        final ShadowDance game = new ShadowDance();
         game.run();
     }
 
-    // performs a state update REFRESH_RATE times every second
+    /**
+     * This method updates the game state and draws the appropriate screen based on
+     * the current state.
+     * It draws the background and allows the user to exit or pause the game. If the
+     * game is paused, it draws the pause screen.
+     * If the game is playing, it allows the user to start the game and draws the
+     * start screen. If the game has ended, it allows the user to restart the game
+     * and draws the end screen.
+     * If the game is in progress, it allows the user to restart the game,
+     * increments the frame counter, gets the current level, updates the level if it
+     * is running, and checks if the level has ended to display the appropriate
+     * screen.
+     * This method is called REFRESH_RATE times every second by the Bagel engine
+     *
+     * @param input The input object used to get user input.
+     */
     @Override
-    protected void update(Input input) {
+    protected void update(final Input input) {
         // draw background
         this.disp.drawBackground(IMAGE_BACKGROUND);
 
-        // allow user to exit
-        if (input.wasPressed(Keys.ESCAPE)) {
-            Window.close();
-        }
+        // allow user to exit, pause
+        getState(input);
 
-        // pause logic
-        if (input.wasPressed(Keys.TAB)) {
-            if (!this.paused)
-                this.paused = true;
-            else
-                this.paused = false;
-        }
-
-        /* game state logic */
         // if paused
         if (this.paused) {
             this.disp.drawPauseScreen();
-        } else {
-            // allow user to start game
-            if (input.wasPressed(Keys.SPACE))
-                this.started = false;
+        }
+        // if playing
+        else {
+            // allow user to select level
+            chooseLevel(input);
 
-            // if game started
+            // game started
             if (this.started) {
-                this.disp.drawStartScreen();
-                // if game ended
-            } else if (this.ended) {
+                startScreen();
+            }
+            // game ended
+            else if (this.ended) {
+                // allow user to restart game
                 enableRestart(input);
+                // draw end screen
                 this.disp.drawEndScreen(score, high_score);
-                // else in progress
-            } else {
+            }
+            // game in progress
+            else {
+                // allow user to restart game
                 enableRestart(input);
 
                 // increment frame counter
                 this.frame++;
 
                 // get current level, activate if not ended
-                this.currentLevel = this.levels.get(level_num);
-                if (!this.level_ended)
-                    this.currentLevel.setActive(true);
+                activateLevel();
 
-                // if current level is running
-                if (this.currentLevel.isActive()) {
-                    this.disp.drawScore(this.currentLevel.getScore());
-                    this.currentLevel.update(this.frame, input);
+                // if current level is running, update
+                updateLevel(input);
 
-                    // if there is a new grade, get new grade
-                    if (this.currentLevel.getGrade() != 0) {
-                        this.frames_grading = GRADE_FRAMES;
-                        this.current_grade = this.currentLevel.getGrade();
-                    }
+                // if current level has now ended, display win/lose/end screen
+                checkLevelEnded(input);
+            }
+        }
+    }
 
-                    // if there are frames left to display grade, display it
-                    if (this.frames_grading > 0) {
-                        this.disp.drawGrade(this.current_grade);
-                        this.frames_grading--;
-                        // else reset grade
-                    } else
-                        this.current_grade = 0;
+    private void startScreen() {
+        this.disp.drawStartScreen();
+        if (this.high_level_num > 0)
+            this.disp.drawContinueOption();
 
-                    // if level no longer active
-                    if (!this.currentLevel.isActive()) {
-                        // end level
-                        this.level_ended = true;
+        if (this.disp_lock) {
+            this.lock_frames = LOCK_FRAMES;
+            this.disp_lock = false;
+        }
 
-                        // calculate if player won level, add score
-                        if (this.currentLevel.getScore() >= WIN_SCORE) {
-                            this.currentLevel.setWin(true);
-                            this.score += this.currentLevel.getScore();
-                            if (this.score > this.high_score)
-                                this.high_score = this.score;
-                        } else {
-                            this.currentLevel.setWin(false);
-                        }
-                    }
+        if (this.lock_frames > 0) {
+            this.disp.drawLevelLocked();
+            this.lock_frames--;
+        }
+    }
+
+    private void chooseLevel(final Input input) {
+        // allow user to continue game with space
+        if (input.wasPressed(Keys.SPACE))
+            this.started = false;
+
+        // allow user to select level with number keys 1 2 3
+        if (input.wasPressed(Keys.NUM_1)) {
+            checkLevelLock(0);
+        } else if (input.wasPressed(Keys.NUM_2)) {
+            checkLevelLock(1);
+        } else if (input.wasPressed(Keys.NUM_3)) {
+            checkLevelLock(2);
+        }
+    }
+
+    private void checkLevelLock(final int level_choice) {
+        if (this.high_level_num >= level_choice) {
+            this.level_num = level_choice;
+            this.started = false;
+        } else {
+            this.disp_lock = true;
+        }
+    }
+
+    private void getState(final Input input) {
+        // allow user to exit
+        if (input.wasPressed(Keys.ESCAPE)) {
+            Window.close();
+        }
+
+        // allow user to pause
+        if (input.wasPressed(Keys.TAB)) {
+            this.paused = !this.paused;
+        }
+    }
+
+    private void activateLevel() {
+        this.currentLevel = this.levels.get(level_num);
+        if (!this.level_ended)
+            this.currentLevel.setActive(true);
+    }
+
+    private void updateLevel(final Input input) {
+        if (this.currentLevel.isActive()) {
+            this.disp.drawScore(this.currentLevel.getScore());
+            this.currentLevel.update(this.frame, input);
+            displayGrade();
+            displaySpecial();
+
+            // end level if now inactive
+            checkLevelInactive();
+        }
+    }
+
+    private void displayGrade() {
+        // if there is a new grade, replace current
+        if (this.currentLevel.getGrade() != 0 && this.currentLevel.getSpecialType() == 0) {
+            this.grade_frames = GRADE_FRAMES;
+            this.current_grade = this.currentLevel.getGrade();
+        }
+
+        // if there are frames left to display grade, display it
+        if (this.grade_frames > 0 && this.current_grade != 0) {
+            this.disp.drawGrade(this.current_grade);
+            this.grade_frames--;
+        }
+        // else reset grade
+        else
+            this.current_grade = 0;
+    }
+
+    private void displaySpecial() {
+        // if there is a new special grade, replace current
+        if (this.currentLevel.getSpecialType() != Note.NULL) {
+            this.special_frames = GRADE_FRAMES;
+            this.current_special = this.currentLevel.getSpecialType();
+        }
+
+        // if there are frames left to display special grade, display it
+        if (this.special_frames > 0 && this.current_special != 0) {
+            this.disp.drawSpecial(this.current_special);
+            this.special_frames--;
+        }
+        // else reset special grade
+        else
+            this.current_special = 0;
+    }
+
+    private void checkLevelInactive() {
+        // if level no longer active
+        if (!this.currentLevel.isActive()) {
+            // end level
+            this.level_ended = true;
+
+            // calculate if player won level, add score
+            if (this.currentLevel.getScore() >= WIN_SCORE) {
+                this.currentLevel.setWin(true);
+                this.high_level_num = this.level_num;
+                this.score += this.currentLevel.getScore();
+                if (this.score > this.high_score)
+                    this.high_score = this.score;
+            } else {
+                this.currentLevel.setWin(false);
+            }
+        }
+    }
+
+    private void checkLevelEnded(final Input input) {
+        // if level ended, display win/lose/end screen
+        if (this.level_ended) {
+            if (this.currentLevel.hasWin()) {
+                this.disp.drawWinScreen(this.currentLevel.getScore(), this.score);
+                // allow user to go back to level selection
+                if (input.wasPressed(Keys.ENTER)) {
+                    this.level_ended = false;
+                    this.currentLevel.setScore(0);
+                    this.currentLevel.reset(this.currentLevel);
+                    this.started = true;
+                    this.frame = 0;
+                    this.grade_frames = 0;
                 }
-                // if level ended, display win/lose/end screen
-                if (this.level_ended) {
-                    if (this.currentLevel.hasWin()) {
-                        this.disp.drawWinScreen(this.currentLevel.getScore(), this.score);
-                        // allow user to go to next level
-                        if (input.wasPressed(Keys.SPACE)) {
-                            this.level_ended = false;
-                            // if there are more levels
-                            if (this.levels.size() - this.level_num > 1) {
-                                this.level_num++;
-                                this.frame = 0;
-                                this.frames_grading = 0;
-                                // if no more levels, game ended
-                            } else
-                                this.ended = true;
-                        }
-                    } else {
-                        this.disp.drawLoseScreen(this.currentLevel.getScore());
-                        // allow user to restart level
-                        if (input.wasPressed(Keys.SPACE)) {
-                            this.level_ended = false;
-                            this.currentLevel.setScore(0);
-                            this.frame = 0;
-                            this.frames_grading = 0;
-                            this.currentLevel.reset(this.currentLevel);
-                        }
-                    }
+
+                // allow user to go to next level
+                if (input.wasPressed(Keys.SPACE)) {
+                    this.level_ended = false;
+                    // if there are more levels
+                    if (this.levels.size() - this.level_num > 1) {
+                        this.level_num++;
+                        this.frame = 0;
+                        this.grade_frames = 0;
+                        // if no more levels, game ended
+                    } else
+                        this.ended = true;
+                }
+            } else {
+                this.disp.drawLoseScreen(this.currentLevel.getScore());
+                // allow user to go back to level selection
+                if (input.wasPressed(Keys.ENTER)) {
+                    this.level_ended = false;
+                    this.currentLevel.setScore(0);
+                    this.currentLevel.reset(this.currentLevel);
+                    this.started = true;
+                    this.frame = 0;
+                    this.grade_frames = 0;
+                }
+
+                // allow user to restart level
+                if (input.wasPressed(Keys.SPACE)) {
+                    this.level_ended = false;
+                    this.currentLevel.setScore(0);
+                    this.currentLevel.reset(this.currentLevel);
+                    this.frame = 0;
+                    this.grade_frames = 0;
                 }
             }
         }
     }
 
     // allow user to restart game on key R
-    private void enableRestart(Input input) {
+    private void enableRestart(final Input input) {
         if (input.wasPressed(Keys.R)) {
             this.started = true;
             this.ended = false;
             this.level_ended = false;
 
             this.frame = 0;
-            this.frames_grading = 0;
+            this.grade_frames = 0;
             this.current_grade = 0;
             this.score = 0;
             this.level_num = 0;
+            this.high_level_num = 0;
 
-            for (Level level : this.levels) {
+            for (final Level level : this.levels) {
                 level.reset(level);
             }
         }
@@ -220,9 +357,5 @@ public class ShadowDance extends AbstractGame {
 
     public static final int getHeight() {
         return WINDOW_HEIGHT;
-    }
-
-    public static final Boolean hasRefresh60() {
-        return refresh_60;
     }
 }
