@@ -3,22 +3,24 @@ import bagel.Keys;
 
 public class Grader {
     // grading
-    private static final int PERFECT = 0;
-    private static final int GOOD = 1;
-    private static final int BAD = 2;
-    private static final int MISS = 3;
+    private static final int SPECIAL = 0;
+    private static final int PERFECT = 1;
+    private static final int GOOD = 2;
+    private static final int BAD = 3;
+    private static final int MISS = 4;
 
     // grading scores
-    private static final int[] GRADE = { 10, 5, -1, -5 };
+    private static final int[] GRADE = { 15, 10, 5, -1, -5 };
 
     // grading distances
-    private static final int[] DISTANCE = { 15, 50, 100, 200 };
+    private static final int[] DISTANCE = { 50, 15, 50, 100, 200 };
 
     // grade y position
     private static final int NOTE_STATIONARY_Y = 657;
 
     // attributes with default values
     private int grade = 0;
+    private boolean specialGrade = false;
 
     // get score from player input
     public Boolean[] checkScore(Note note, Input input, Boolean holding) {
@@ -26,13 +28,14 @@ public class Grader {
         int dir = Note.NULL;
         double note_y = note.getY();
 
+        // TODO: combine normal/special type checks here
         // if note is normal
         if (note.getType() == Note.NORMAL) {
             dir = checkInputPressed(input);
         }
         // if note is special
         else if (note.getType() > Note.HOLD) {
-            // do nothing?
+            dir = checkInputPressed(input);
         }
         // else if note is held and not already holding
         else if (note.getType() == Note.HOLD && !holding) {
@@ -56,12 +59,21 @@ public class Grader {
         }
 
         // if in grading range
-        if ((NOTE_STATIONARY_Y - note_y <= DISTANCE[MISS]) && (((NOTE_STATIONARY_Y - note_y >= 0) && note.getType() != Note.HOLD)
-                || ((NOTE_STATIONARY_Y - note_y + note.getMidpoint() >= 0) && note.getType() == Note.HOLD))) {
-            // grade the input, kill note if graded and not holding
-            if (gradeInput(dir, note, note_y)) {
-                if (!holding)
-                    note.setActive(false);
+        if ((NOTE_STATIONARY_Y - note_y <= DISTANCE[MISS])
+                && (((NOTE_STATIONARY_Y - note_y >= 0) && note.getType() != Note.HOLD)
+                        || ((NOTE_STATIONARY_Y - note_y + note.getMidpoint() >= 0) && note.getType() == Note.HOLD))) {
+            if (note.getType() == Note.HOLD || note.getType() == Note.NORMAL) {
+                // grade the input, kill note if graded and not holding
+                if (gradeInput(dir, note, note_y)) {
+                    if (!holding || this.grade == GRADE[MISS])
+                        note.setActive(false);
+                }
+            }
+            else if (note.getType() > Note.HOLD) {
+                // grade the input, kill note if graded
+                if (gradeSpecialInput(dir, note, note_y)) {
+                        note.setActive(false);
+                }
             }
         }
         // else if past grading range
@@ -79,11 +91,32 @@ public class Grader {
             // if wrong direction
             if (dir != note.getDir()) {
                 this.grade = GRADE[MISS];
+            } else {
                 // if within range
-            } else if (graded = gradeDistance(PERFECT, note, note_y)) {
-            } else if (graded = gradeDistance(GOOD, note, note_y)) {
-            } else if (graded = gradeDistance(BAD, note, note_y)) {
-            } else if (graded = gradeDistance(MISS, note, note_y)) {
+                if (graded = gradeDistance(PERFECT, note, note_y)) {
+                } else if (graded = gradeDistance(GOOD, note, note_y)) {
+                } else if (graded = gradeDistance(BAD, note, note_y)) {
+                } else if (graded = gradeDistance(MISS, note, note_y)) {
+                }
+            }
+        }
+        return graded;
+    }
+
+    // grade player input for special note
+    public Boolean gradeSpecialInput(int dir, Note note, double note_y) {
+        boolean graded = false;
+        // if valid input and note is on screen
+        if (dir != Note.NULL && note_y <= NOTE_STATIONARY_Y) {
+            // if wrong direction
+            if (dir != note.getDir()) {
+                this.grade = GRADE[MISS];
+            } else {
+                // if within range
+                if (graded = gradeDistance(SPECIAL, note, note_y)) {
+                    this.specialGrade = true;
+                }
+                // else do nothing
             }
         }
         return graded;
@@ -111,6 +144,8 @@ public class Grader {
             return Note.UP;
         } else if (input.wasReleased(Keys.DOWN)) {
             return Note.DOWN;
+        } else if (input.wasPressed(Keys.SPACE)) {
+            return Note.SPECIAL;
         } else {
             return Note.NULL;
         }
@@ -126,6 +161,8 @@ public class Grader {
             return Note.UP;
         } else if (input.wasPressed(Keys.DOWN)) {
             return Note.DOWN;
+        } else if (input.wasPressed(Keys.SPACE)) {
+            return Note.SPECIAL;
         } else {
             return Note.NULL;
         }
@@ -150,5 +187,13 @@ public class Grader {
 
     public static int getMissGrade() {
         return GRADE[MISS];
+    }
+
+    public static int getSpecialGrade() {
+        return GRADE[SPECIAL];
+    }
+
+    public Boolean isSpecialGrade() {
+        return this.specialGrade;
     }
 }
