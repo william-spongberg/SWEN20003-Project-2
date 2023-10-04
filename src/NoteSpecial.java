@@ -1,24 +1,25 @@
-import bagel.*;
+import bagel.Image;
 
 public class NoteSpecial implements Note {
     // images
     private final Image IMAGE_DOUBLE_SCORE = new Image("res/note_special/note2x.png");
     private final Image IMAGE_BOMB = new Image("res/note_special/noteBomb.png");
-    private final Image IMAGE_SPEED_UP = new Image("res/note_special/holdSpeedUp.png");
-    private final Image IMAGE_SLOW_DOWN = new Image("res/note_special/holdSlowDown.png");
+    private final Image IMAGE_SPEED_UP = new Image("res/note_special/noteSpeedUp.png");
+    private final Image IMAGE_SLOW_DOWN = new Image("res/note_special/noteSlowDown.png");
 
     // starting y position
     private static final Double START_Y = 100.0;
 
     // midpoint
-    private static final int MIDPOINT = 82;
+    private static final int MIDPOINT = 32;
 
     // attributes with default values
     private Image image = IMAGE_DOUBLE_SCORE;
-    private int dir = -1;
+    private int dir = SPECIAL;
     private int type = DOUBLE_SCORE;
     private int delay = 0;
-    private double y = 0;
+    private double y = START_Y;
+    private int speed = 0;
     private boolean active = true;
     private boolean visual = false;
     private boolean below_screen = false;
@@ -30,38 +31,38 @@ public class NoteSpecial implements Note {
     public void reset(String dir, String type, int delay) {
         // set image type
         switch (type) {
-            case TYPE_DOUBLE_SCORE:
+            case STR_DOUBLE_SCORE:
                 this.image = IMAGE_DOUBLE_SCORE;
                 this.type = DOUBLE_SCORE;
                 break;
-            case TYPE_BOMB:
+            case STR_BOMB:
                 this.image = IMAGE_BOMB;
                 this.type = BOMB;
                 // if not in special lane, get lane from dir
                 if (dir != "") {
                     switch(dir) {
-                        case TYPE_LEFT:
+                        case STR_LEFT:
                             this.dir = LEFT;
                             break;
-                        case TYPE_RIGHT:
+                        case STR_RIGHT:
                             this.dir = RIGHT;
                             break;
-                        case TYPE_UP:
+                        case STR_UP:
                             this.dir = UP;
                             break;
-                        case TYPE_DOWN:
+                        case STR_DOWN:
                             this.dir = DOWN;
                             break;
                         default:
-                            System.out.println("Error: invalid note");
+                            System.out.println("Error: invalid special note");
                     }
                 }
                 break;
-            case TYPE_SPEED_UP:
+            case STR_SPEED_UP:
                 this.image = IMAGE_SPEED_UP;
                 this.type = SPEED_UP;
                 break;
-            case TYPE_SLOW_DOWN:
+            case STR_SLOW_DOWN:
                 this.image = IMAGE_SLOW_DOWN;
                 this.type = SLOW_DOWN;
                 break;
@@ -90,14 +91,14 @@ public class NoteSpecial implements Note {
     public void update(int frame, int lane_x[]) {
         // if active or visual
         if (this.active || this.visual) {
-            // calculate y position
-            this.y = START_Y + (frame - this.delay) * REFRESH_60_MULTIPLIER;
-
             // if note is on screen
-            if ((this.y > START_Y) && (this.y < (ShadowDance.getHeight() + this.image.getHeight() / 2))) {
+            if (((this.delay - frame) <= 0) && (this.y < (ShadowDance.getHeight() + this.image.getHeight() / 2))) {
                 // now visual
                 if (!this.visual)
                     this.visual = true;
+                    
+                // calculate y position
+                this.y += REFRESH_60_MULTIPLIER + this.speed;
 
                 // draw note
                 this.image.draw(lane_x[this.dir], this.y);
@@ -136,6 +137,10 @@ public class NoteSpecial implements Note {
         return START_Y;
     }
 
+    public Integer getSpeed() {
+        return this.speed;
+    }
+
     public Integer getMidpoint() {
         return MIDPOINT;
     }
@@ -152,10 +157,6 @@ public class NoteSpecial implements Note {
         return this.below_screen;
     }
 
-    public Boolean canGrade(Input input) {
-        return false;
-    }
-
     /* setters */
 
     public void setActive(Boolean active) {
@@ -170,5 +171,7 @@ public class NoteSpecial implements Note {
         this.below_screen = below_screen;
     }
 
-
+    public void setSpeed(Integer speed) {
+        this.speed = speed;
+    }
 }

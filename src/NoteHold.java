@@ -1,4 +1,4 @@
-import bagel.*;
+import bagel.Image;
 
 public class NoteHold implements Note {
     // images
@@ -17,7 +17,8 @@ public class NoteHold implements Note {
     private Image image = IMAGE_NOTEHOLD_LEFT;
     private int dir = LEFT;
     private int delay = 0;
-    private double y = 0;
+    private double y = START_Y;
+    private int speed = 0;
     private boolean active = true;
     private boolean visual = false;
     private boolean below_screen = false;
@@ -29,24 +30,24 @@ public class NoteHold implements Note {
     public void reset(String dir, String type, int delay) {
         // set image direction, note direction to dir
         switch (dir) {
-            case TYPE_LEFT:
+            case STR_LEFT:
                 this.image = IMAGE_NOTEHOLD_LEFT;
                 this.dir = LEFT;
                 break;
-            case TYPE_RIGHT:
+            case STR_RIGHT:
                 this.image = IMAGE_NOTEHOLD_RIGHT;
                 this.dir = RIGHT;
                 break;
-            case TYPE_UP:
+            case STR_UP:
                 this.image = IMAGE_NOTEHOLD_UP;
                 this.dir = UP;
                 break;
-            case TYPE_DOWN:
+            case STR_DOWN:
                 this.image = IMAGE_NOTEHOLD_DOWN;
                 this.dir = DOWN;
                 break;
             default:
-                System.out.println("Error: invalid note");
+                System.out.println("Error: invalid hold note");
         }
         // set note delay
         this.delay = delay;
@@ -69,14 +70,14 @@ public class NoteHold implements Note {
     public void update(int frame, int lane_x[]) {
         // if active or visual
         if (this.active || this.visual) {
-            // calculate y position
-            this.y = START_Y + (frame - this.delay) * REFRESH_60_MULTIPLIER;
-
             // if note is on screen
-            if ((this.y > START_Y) && (this.y < (ShadowDance.getHeight() + this.image.getHeight() / 2))) {
+            if (((this.delay - frame) <= 0) && (this.y < (ShadowDance.getHeight() + this.image.getHeight() / 2))) {
                 // now visual
                 if (!this.visual)
                     this.visual = true;
+                    
+                // calculate y position
+                this.y += REFRESH_60_MULTIPLIER + this.speed;
 
                 // draw note
                 this.image.draw(lane_x[this.dir], this.y);
@@ -115,6 +116,10 @@ public class NoteHold implements Note {
         return START_Y;
     }
 
+    public Integer getSpeed() {
+        return this.speed;
+    }
+
     public Boolean isActive() {
         return this.active;
     }
@@ -131,10 +136,6 @@ public class NoteHold implements Note {
         return MIDPOINT;
     }
 
-    public Boolean canGrade(Input input) {
-        return false;
-    }
-
     /* setters */
 
     public void setActive(Boolean active) {
@@ -147,5 +148,9 @@ public class NoteHold implements Note {
 
     public void setBelowScreen(Boolean below_screen) {
         this.below_screen = below_screen;
+    }
+
+    public void setSpeed(Integer speed) {
+        this.speed = speed;
     }
 }
