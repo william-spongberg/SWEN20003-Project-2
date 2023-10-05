@@ -2,7 +2,6 @@ import bagel.Input;
 import bagel.Keys;
 
 public class Grader {
-    // TODO: change constants to public, avoid getters here
     // grading
     private static final int PERFECT = 0;
     private static final int GOOD = 1;
