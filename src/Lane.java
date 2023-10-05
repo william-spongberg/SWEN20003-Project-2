@@ -15,12 +15,12 @@ public class Lane {
     private boolean active = false;
     private boolean holding = false;
     
-
-    // grader/display object
+    // grader object
     private final Grader grader = new Grader();
-    private final DISPLAY disp = new DISPLAY();
-    
-    private boolean display = true; /* testing */
+
+    /* testing */
+    private boolean display = true;
+
 
     public Lane(final int dir, final int x) {
         this.dir = dir;
@@ -29,13 +29,6 @@ public class Lane {
     }
 
     public void reset(final Lane lane) {
-        this.dir = lane.getDir();
-        this.x = lane.getX();
-        this.speed = 0;
-        this.grade = 0;
-        this.active = lane.isActive();
-        this.holding = false;
-
         this.notes = lane.getNotes();
         // reset notes
         for (final Note note : this.notes) {
@@ -43,6 +36,14 @@ public class Lane {
         }
         this.currentNote = this.notes.get(0);
         this.specialType = 0;
+
+
+        this.dir = lane.getDir();
+        this.x = lane.getX();
+        this.speed = 0;
+        this.grade = 0;
+        this.active = true;
+        this.holding = false;
     }
 
     public void addNote(final Note note) {
@@ -55,61 +56,63 @@ public class Lane {
         this.specialType = 0;
         this.grade = 0;
 
-        /* testing */
-        // display note data
-        disp.drawNoteData(this.currentNote);
-
-        // draw current note data to system
-        //System.out.println("Current note: " + this.currentNote.getDir() + " " + this.currentNote.getType() + " "
-        //        + this.currentNote.getY());
-
-        // print note data
-        if (this.display) {
-            System.out.println("dir|type|delay");
-            for (final Note note : this.notes)
-                System.out.println(note.getDir() + " " + note.getType() + " " + note.getDelay());
-            this.display = false;
-        }
-
-        // if current note is active
-        if (this.currentNote.isActive()) {
-            final Boolean[] temp = grader.checkScore(this.currentNote, input, this.dir, this.holding);
-            this.currentNote.setActive(temp[0]);
-            
-
-            // update grade
-            this.grade = grader.getGrade();
+        if (this.active) {
 
             /* testing */
-            if (this.grade == Grader.getMissGrade())
-                System.out.println(dir + " miss");
-            if (this.holding != temp[1])
-                System.out.println(dir + " holding: " + this.holding + " -> " + temp[1]);
+            // private final DISPLAY disp = new DISPLAY();
+            // display note data
+            // disp.drawNoteData(this.currentNote);
 
-            this.holding = temp[1];
-        }
+            // draw current note data to system
+            //System.out.println("Current note: " + this.currentNote.getDir() + " " + this.currentNote.getType() + " "
+            //        + this.currentNote.getY());
 
-        // if current note now inactive
-        if (!this.currentNote.isActive()) {
-            // if graded special, do special move
-            if (this.currentNote.getType() > Note.HOLD && this.grader.isSpecialGrade()) {
-                if (this.grade == Grader.getMissGrade()) {
-                    this.grade = 0;
+            // print note data
+            if (this.display) {
+                System.out.println("dir|type|delay");
+                for (final Note note : this.notes)
+                    System.out.println(note.getDir() + " " + note.getType() + " " + note.getDelay());
+                this.display = false;
+            }
+
+            // if current note is active
+            if (this.currentNote.isActive()) {
+                final Boolean[] temp = grader.checkScore(this.currentNote, input, this.dir, this.holding);
+                
+                // update grade
+                this.grade = grader.getGrade();
+
+                /* testing */
+                if (this.grade == Grader.getMissGrade())
+                    System.out.println(dir + " miss");
+                if (this.holding != temp[1])
+                    System.out.println(dir + " holding: " + this.holding + " -> " + temp[1]);
+                
+                this.currentNote.setActive(temp[0]);
+                this.holding = temp[1];
+            }
+
+            // if current note now inactive
+            if (!this.currentNote.isActive()) {
+                // if graded special
+                if (this.currentNote.getType() > Note.HOLD && this.grader.isSpecialGrade()) {
+                    // no miss penalty
+                    if (this.grade == Grader.getMissGrade()) {
+                        this.grade = 0;
+                    }
+                    this.specialType = this.currentNote.getType();
                 }
-                this.specialType = this.currentNote.getType();
-            }
 
-            // get next note if more left
-            if (this.notes.indexOf(this.currentNote) < this.notes.size() - 1) {
-                this.currentNote = this.notes.get(this.notes.indexOf(this.currentNote) + 1);
-                this.holding = false;
-            }
-            // if last note isn't visual (off screen) lane is inactive
-            else {
-                if (!currentNote.isVisual() || !currentNote.isActive()) {
-                    this.specialType = 0;
-                    this.active = false;
-                    this.grade = 0;
+                // get next note if more left
+                if (this.notes.indexOf(this.currentNote) < this.notes.size() - 1) {
+                    this.currentNote = this.notes.get(this.notes.indexOf(this.currentNote) + 1);
+                    this.holding = false;
+                }
+                // if last note isn't visual (off screen), lane is inactive
+                else {
+                    if (!currentNote.isVisual() || !currentNote.isActive()) {
+                        this.active = false;
+                    }
                 }
             }
         }
@@ -169,6 +172,7 @@ public class Lane {
     }
 
     /* setters */
+
     public void setSpeed(final int speed) {
         this.speed = speed;
     }
