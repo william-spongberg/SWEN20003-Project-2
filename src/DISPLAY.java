@@ -15,7 +15,7 @@ public final class DISPLAY {
     private final Font FONT_GRADE = new Font(FILE_FONT, 40);
 
     /* testing */
-    private final Font FONT_TEST = new Font(FILE_FONT, 12);
+    private final Font FONT_TEST = new Font(FILE_FONT, 8);
 
     /* strings */
     // title
@@ -33,7 +33,7 @@ public final class DISPLAY {
     private static final String STR_GOOD = "GOOD";
     private static final String STR_BAD = "BAD";
     private static final String STR_MISS = "MISS";
-    private static final String STR_DOUBLE = "SPEED UP";
+    private static final String STR_DOUBLE = "DOUBLE SCORE";
     private static final String STR_BOMB = "LANE CLEAR";
     private static final String STR_SPEED = "SPEED UP";
     private static final String STR_SLOW = "SLOW DOWN";
@@ -53,7 +53,7 @@ public final class DISPLAY {
     // centered text, small font for subtitles
 
     /* draw passive screens */
-    public final void drawBackground(Image image) {
+    public final void drawBackground(final Image image) {
         image.draw(Window.getWidth() / 2.0, Window.getHeight() / 2.0);
     }
 
@@ -82,7 +82,7 @@ public final class DISPLAY {
     }
 
     // draw score
-    public final void drawScore(int score) {
+    public final void drawScore(final int score) {
         FONT_SCORE.drawString(SCORE + score, 35, 35);
     }
 
@@ -107,9 +107,9 @@ public final class DISPLAY {
                 WINDOW_HEIGHT / 2);
     }
 
-    public final void drawSpecial(int type) {
+    public final void drawSpecial(final int type) {
         if (type == Note.DOUBLE_SCORE) {
-            FONT_GRADE.drawString(STR_DOUBLE, WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(STR_PERFECT) / 2,
+            FONT_GRADE.drawString(STR_DOUBLE, WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(STR_DOUBLE) / 2,
                     WINDOW_HEIGHT / 2);
         } else if (type == Note.BOMB) {
             FONT_GRADE.drawString(STR_BOMB, WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(STR_BOMB) / 2,
@@ -126,7 +126,7 @@ public final class DISPLAY {
     }
 
     // draw grade according to grade
-    public final void drawGrade(int grade) {
+    public final void drawGrade(final int grade) {
         if (grade == Grader.getPerfectGrade()) {
             drawPerfect();
         } else if (grade == Grader.getGoodGrade()) {
@@ -139,11 +139,10 @@ public final class DISPLAY {
         } else {
             System.out.println("Error: invalid grade");
         }
-        // TODO: stop drawing grades for special notes
     }
 
     /* draw win/lose/end screen */
-    public final void drawWinScreen(int score, int total_score) {
+    public final void drawWinScreen(final int score, final int total_score) {
         FONT.drawString(CLEAR, WINDOW_WIDTH / 2 - FONT.getWidth(CLEAR) / 2,
                 WINDOW_HEIGHT / 2 - 100);
         FONT_SMALL.drawString(SCORE + score, WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(SCORE + score) / 2,
@@ -156,7 +155,7 @@ public final class DISPLAY {
                 WINDOW_HEIGHT / 2 + 150);
     }
 
-    public final void drawLoseScreen(int score) {
+    public final void drawLoseScreen(final int score) {
         FONT.drawString(LOSE, WINDOW_WIDTH / 2 - FONT.getWidth(LOSE) / 2,
                 WINDOW_HEIGHT / 2 - 100);
         FONT_SMALL.drawString(SCORE + score, WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(SCORE + score) / 2,
@@ -168,7 +167,7 @@ public final class DISPLAY {
                 WINDOW_HEIGHT / 2 + 150);
     }
 
-    public final void drawEndScreen(int total_score, int high_score) {
+    public final void drawEndScreen(final int total_score, final int high_score) {
         FONT.drawString(GAME_OVER, WINDOW_WIDTH / 2 - FONT.getWidth(GAME_OVER) / 2,
                 WINDOW_HEIGHT / 2 - 100);
         FONT_SMALL.drawString(TOTAL_SCORE + total_score,
@@ -183,14 +182,12 @@ public final class DISPLAY {
     }
 
     /* testing note data */
-    public final void drawNoteData(Note note) {
+    public final void drawNoteData(final Note note) {
         // draw note data
-        FONT_TEST.drawString("dir " + note.getDir(), 35, 35);
-        FONT_TEST.drawString("type " + note.getType(), 35, 65);
-        FONT_TEST.drawString("delay " + note.getDelay(), 35, 95);
-        FONT_TEST.drawString("y " + note.getY(), 35, 125);
-        FONT_TEST.drawString("active " + note.isActive(), 35, 155);
-        FONT_TEST.drawString("visual " + note.isVisual(), 35, 185);
-        FONT_TEST.drawString("below_screen " + note.isBelowScreen(), 35, 215);
+        FONT_TEST.drawString("" + note.isActive(), note.getX()+25, note.getY());
+        FONT_TEST.drawString("" + note.getType(), note.getX()+25, note.getY() + 10);
+        //FONT_TEST.drawString("" + note.getY(), note.getX()+25, note.getY() + 10);
+        //FONT_TEST.drawString("" + note.getDelay(), note.getX()+25, note.getY() + 20);
+        //FONT_TEST.drawString("" + (657 - note.getY()), note.getX()+25, note.getY() + 30);
     }
 }
