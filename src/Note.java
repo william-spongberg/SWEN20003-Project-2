@@ -35,14 +35,15 @@ public interface Note {
 
     // methods
     public void reset(Note note);
-    public void reset(String dir, String type, int delay);
-    public void update(int frame, int lane_x[]);
+    public void reset(String dir, String type, int delay, int x);
+    public void update(int frame);
 
     /* getters */
     public Image getImage();    
     public Integer getDir();
     public Integer getType();
     public Integer getDelay();
+    public Integer getX(); // testing
     public Double getY();
     public Double getStartY();
     public Integer getSpeed();
@@ -55,5 +56,5 @@ public interface Note {
     public void setActive(Boolean active);
     public void setVisual(Boolean visual);
     public void setBelowScreen(Boolean below_screen);
-    public void setSpeed(Integer speed);
+    public void addSpeed(Integer speed);
 }
