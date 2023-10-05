@@ -82,7 +82,7 @@ public class NoteSpecial implements Note {
         this.dir = note.getDir();
         this.type = note.getType();
         this.delay = note.getDelay();
-        this.y = 0;
+        this.y = START_Y;
 
         this.active = true;
         this.visual = false;

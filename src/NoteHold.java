@@ -61,7 +61,7 @@ public class NoteHold implements Note {
         this.image = note.getImage();
         this.dir = note.getDir();
         this.delay = note.getDelay();
-        this.y = 0;
+        this.y = START_Y;
 
         this.active = true;
         this.visual = false;
