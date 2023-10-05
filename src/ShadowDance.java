@@ -23,11 +23,10 @@ public class ShadowDance extends AbstractGame {
     private final Image IMAGE_BACKGROUND = new Image("res/background.png");
 
     // file level names
-    private static final String[] LEVEL_FILES = { "res/level/level1-60.csv", "res/level/level2-60.csv",
+    private static final String[] LEVEL_FILES = { "res/level/testc-60.csv", "res/level/level2-60.csv",
             "res/level/level3-60.csv" };
 
     // game logic constants
-    private static final int GRADE_FRAMES = 30;
     private static final int LOCK_FRAMES = 45;
     private static final int WIN_SCORE = Integer.MIN_VALUE; // 150;
 
@@ -47,12 +46,8 @@ public class ShadowDance extends AbstractGame {
 
     // frame counter, frame counters, current grade/special, score, level number
     private int frame = 0;
-    private int grade_frames = 0;
-    private int special_frames = 0;
     private int lock_frames = 0;
 
-    private int current_grade = 0;
-    private int current_special = 0;
     private int score = 0;
     private int high_score = 0;
 
@@ -122,12 +117,11 @@ public class ShadowDance extends AbstractGame {
         }
         // if playing
         else {
-            // allow user to select level
-            chooseLevel(input);
-
             // game started
             if (this.started) {
                 startScreen();
+                // allow user to select level
+                chooseLevel(input);
             }
             // game ended
             else if (this.ended) {
@@ -218,46 +212,10 @@ public class ShadowDance extends AbstractGame {
         if (this.currentLevel.isActive()) {
             this.disp.drawScore(this.currentLevel.getScore());
             this.currentLevel.update(this.frame, input);
-            displayGrade();
-            displaySpecial();
 
             // end level if now inactive
             checkLevelInactive();
         }
-    }
-
-    private void displayGrade() {
-        // if there is a new grade, replace current
-        if (this.currentLevel.getGrade() != 0 && this.currentLevel.getSpecialType() == 0) {
-            this.grade_frames = GRADE_FRAMES;
-            this.current_grade = this.currentLevel.getGrade();
-        }
-
-        // if there are frames left to display grade, display it
-        if (this.grade_frames > 0 && this.current_grade != 0) {
-            this.disp.drawGrade(this.current_grade);
-            this.grade_frames--;
-        }
-        // else reset grade
-        else
-            this.current_grade = 0;
-    }
-
-    private void displaySpecial() {
-        // if there is a new special grade, replace current
-        if (this.currentLevel.getSpecialType() != Note.NULL) {
-            this.special_frames = GRADE_FRAMES;
-            this.current_special = this.currentLevel.getSpecialType();
-        }
-
-        // if there are frames left to display special grade, display it
-        if (this.special_frames > 0 && this.current_special != 0) {
-            this.disp.drawSpecial(this.current_special);
-            this.special_frames--;
-        }
-        // else reset special grade
-        else
-            this.current_special = 0;
     }
 
     private void checkLevelInactive() {
@@ -291,7 +249,6 @@ public class ShadowDance extends AbstractGame {
                     this.currentLevel.reset(this.currentLevel);
                     this.started = true;
                     this.frame = 0;
-                    this.grade_frames = 0;
                 }
 
                 // allow user to go to next level
@@ -301,7 +258,6 @@ public class ShadowDance extends AbstractGame {
                     if (this.levels.size() - this.level_num > 1) {
                         this.level_num++;
                         this.frame = 0;
-                        this.grade_frames = 0;
                         // if no more levels, game ended
                     } else
                         this.ended = true;
@@ -315,7 +271,6 @@ public class ShadowDance extends AbstractGame {
                     this.currentLevel.reset(this.currentLevel);
                     this.started = true;
                     this.frame = 0;
-                    this.grade_frames = 0;
                 }
 
                 // allow user to restart level
@@ -324,7 +279,6 @@ public class ShadowDance extends AbstractGame {
                     this.currentLevel.setScore(0);
                     this.currentLevel.reset(this.currentLevel);
                     this.frame = 0;
-                    this.grade_frames = 0;
                 }
             }
         }
@@ -338,8 +292,6 @@ public class ShadowDance extends AbstractGame {
             this.level_ended = false;
 
             this.frame = 0;
-            this.grade_frames = 0;
-            this.current_grade = 0;
             this.score = 0;
             this.level_num = 0;
             this.high_level_num = 0;
