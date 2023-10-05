@@ -10,6 +10,8 @@ import bagel.Input;
 import bagel.Keys;
 import bagel.Window;
 
+// TODO: remove /* testing */, give to play testers to check for final bugs
+
 /**
  * SWEN20003 Project 1, Semester 2, 2023
  * 
@@ -23,12 +25,12 @@ public class ShadowDance extends AbstractGame {
     private final Image IMAGE_BACKGROUND = new Image("res/background.png");
 
     // file level names
-    private static final String[] LEVEL_FILES = { "res/level/testc-60.csv", "res/level/level2-60.csv",
+    private static final String[] LEVEL_FILES = { "res/level/level1-60.csv", "res/level/level2-60.csv",
             "res/level/level3-60.csv" };
 
     // game logic constants
     private static final int LOCK_FRAMES = 45;
-    private static final int WIN_SCORE = Integer.MIN_VALUE; // 150;
+    private static final int[] WIN_SCORE = {150, 400, 350};
 
     // display object
     private final DISPLAY disp = new DISPLAY();
@@ -204,8 +206,10 @@ public class ShadowDance extends AbstractGame {
 
     private void activateLevel() {
         this.currentLevel = this.levels.get(level_num);
-        if (!this.level_ended)
+        if (!this.level_ended) {
             this.currentLevel.setActive(true);
+            this.currentLevel.setLevelNum(level_num);
+        }
     }
 
     private void updateLevel(final Input input) {
@@ -225,7 +229,7 @@ public class ShadowDance extends AbstractGame {
             this.level_ended = true;
 
             // calculate if player won level, add score
-            if (this.currentLevel.getScore() >= WIN_SCORE) {
+            if (this.currentLevel.getScore() >= WIN_SCORE[currentLevel.getLevelNum()]) {
                 this.currentLevel.setWin(true);
                 this.high_level_num = this.level_num;
                 this.score += this.currentLevel.getScore();
@@ -263,7 +267,7 @@ public class ShadowDance extends AbstractGame {
                         this.ended = true;
                 }
             } else {
-                this.disp.drawLoseScreen(this.currentLevel.getScore());
+                this.disp.drawLoseScreen(this.currentLevel.getScore(), WIN_SCORE[currentLevel.getLevelNum()]);
                 // allow user to go back to level selection
                 if (input.wasPressed(Keys.ENTER)) {
                     this.level_ended = false;
