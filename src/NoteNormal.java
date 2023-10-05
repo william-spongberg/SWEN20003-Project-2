@@ -17,17 +17,18 @@ public class NoteNormal implements Note {
     private Image image = IMAGE_NOTE_LEFT;
     private int dir = LEFT;
     private int delay = 0;
+    private int x = 0; // testing
     private double y = START_Y;
     private int speed = 0;
     private boolean active = true;
     private boolean visual = false;
     private boolean below_screen = false;
 
-    public NoteNormal(String dir, String type, int delay) {
-        reset(dir, type, delay);
+    public NoteNormal(final String dir, final String type, final int delay, final int x) {
+        reset(dir, type, delay, x);
     }
 
-    public void reset(String dir, String type, int delay) {
+    public void reset(final String dir, final String type, final int delay, final int x) {
         // set image direction, note direction to dir
         switch (dir) {
             case STR_LEFT:
@@ -49,13 +50,14 @@ public class NoteNormal implements Note {
             default:
                 System.out.println("Error: invalid normal note");
         }
-        // set note delay
+        // set note delay, x coord
         this.delay = delay;
+        this.x = x;
     }
 
     // reset to default values
     // but keep original direction and delay
-    public void reset(Note note) {
+    public void reset(final Note note) {
         this.image = note.getImage();
         this.dir = note.getDir();
         this.delay = note.getDelay();
@@ -67,7 +69,7 @@ public class NoteNormal implements Note {
     }
 
     // update note position
-    public void update(int frame, int lane_x[]) {
+    public void update(final int frame) {
         // if active or visual
         if (this.active || this.visual) {
             // if note is on screen
@@ -80,12 +82,11 @@ public class NoteNormal implements Note {
                 this.y += REFRESH_60_MULTIPLIER + this.speed;
 
                 // draw note
-                this.image.draw(lane_x[this.dir], this.y);
+                this.image.draw(this.x, this.y);
             }
+
             // if note is below screen
-            else if (this.y > (ShadowDance.getHeight() + this.image.getHeight() / 2)) {
-                this.visual = false;
-                this.active = false;
+            if (this.y >= (ShadowDance.getHeight() + this.image.getHeight() / 2)) {
                 this.below_screen = true;
             }
         }
@@ -106,6 +107,10 @@ public class NoteNormal implements Note {
 
     public Integer getDelay() {
         return this.delay;
+    }
+
+    public Integer getX() {
+        return this.x;
     }
 
     public Double getY() {
@@ -137,19 +142,19 @@ public class NoteNormal implements Note {
     }
 
     /* setters */
-    public void setActive(Boolean active) {
+    public void setActive(final Boolean active) {
         this.active = active;
     }
 
-    public void setVisual(Boolean visual) {
+    public void setVisual(final Boolean visual) {
         this.visual = visual;
     }
 
-    public void setBelowScreen(Boolean below_screen) {
+    public void setBelowScreen(final Boolean below_screen) {
         this.below_screen = below_screen;
     }
 
-    public void setSpeed(Integer speed) {
+    public void addSpeed(final Integer speed) {
         this.speed = speed;
     }
 }

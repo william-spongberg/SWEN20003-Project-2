@@ -18,17 +18,18 @@ public class NoteSpecial implements Note {
     private int dir = SPECIAL;
     private int type = DOUBLE_SCORE;
     private int delay = 0;
+    private int x = 0;
     private double y = START_Y;
     private int speed = 0;
     private boolean active = true;
     private boolean visual = false;
     private boolean below_screen = false;
 
-    public NoteSpecial(String dir, String type, int delay) {
-        reset(dir, type, delay);
+    public NoteSpecial(final String dir, final String type, final int delay, final int x) {
+        reset(dir, type, delay, x);
     }
 
-    public void reset(String dir, String type, int delay) {
+    public void reset(final String dir, final String type, final int delay, final int x) {
         // set image type
         switch (type) {
             case STR_DOUBLE_SCORE:
@@ -40,7 +41,7 @@ public class NoteSpecial implements Note {
                 this.type = BOMB;
                 // if not in special lane, get lane from dir
                 if (dir != "") {
-                    switch(dir) {
+                    switch (dir) {
                         case STR_LEFT:
                             this.dir = LEFT;
                             break;
@@ -69,13 +70,14 @@ public class NoteSpecial implements Note {
             default:
                 System.out.println("Error: invalid note");
         }
-        // set note delay
+        // set note delay, x coord
         this.delay = delay;
+        this.x = x;
     }
 
     // reset to default values
     // but keep original type and delay
-    public void reset(Note note) {
+    public void reset(final Note note) {
         this.image = note.getImage();
         this.dir = note.getDir();
         this.type = note.getType();
@@ -88,7 +90,7 @@ public class NoteSpecial implements Note {
     }
 
     // update note position
-    public void update(int frame, int lane_x[]) {
+    public void update(final int frame) {
         // if active or visual
         if (this.active || this.visual) {
             // if note is on screen
@@ -96,17 +98,16 @@ public class NoteSpecial implements Note {
                 // now visual
                 if (!this.visual)
                     this.visual = true;
-                    
+
                 // calculate y position
                 this.y += REFRESH_60_MULTIPLIER + this.speed;
 
                 // draw note
-                this.image.draw(lane_x[this.dir], this.y);
+                this.image.draw(this.x, this.y);
             }
+
             // if note is below screen
-            else if (this.y > (ShadowDance.getHeight() + this.image.getHeight() / 2)) {
-                this.visual = false;
-                this.active = false;
+            if (this.y >= (ShadowDance.getHeight() + this.image.getHeight() / 2)) {
                 this.below_screen = true;
             }
         }
@@ -127,6 +128,10 @@ public class NoteSpecial implements Note {
 
     public Integer getType() {
         return this.type;
+    }
+
+    public Integer getX() {
+        return this.x;
     }
 
     public Double getY() {
@@ -159,19 +164,19 @@ public class NoteSpecial implements Note {
 
     /* setters */
 
-    public void setActive(Boolean active) {
+    public void setActive(final Boolean active) {
         this.active = active;
     }
 
-    public void setVisual(Boolean visual) {
+    public void setVisual(final Boolean visual) {
         this.visual = visual;
     }
 
-    public void setBelowScreen(Boolean below_screen) {
+    public void setBelowScreen(final Boolean below_screen) {
         this.below_screen = below_screen;
     }
 
-    public void setSpeed(Integer speed) {
+    public void addSpeed(final Integer speed) {
         this.speed = speed;
     }
 }
