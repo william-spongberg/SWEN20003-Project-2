@@ -42,7 +42,8 @@ public final class DISPLAY {
     private static final String TOTAL_SCORE = "TOTAL SCORE ";
     // level lose
     private static final String LOSE = "TRY AGAIN";
-    private static final String NEED_SCORE = "NEED 150 TO CONTINUE";
+    private static final String NEED_SCORE_1 = "NEED SCORE ";
+    private static final String NEED_SCORE_2 = " TO CONTINUE";
     private static final String LEVEL_SELECT = "PRESS ENTER TO RETURN TO LEVEL SELECTION";
     // game over
     private static final String GAME_OVER = "GAME OVER";
@@ -150,21 +151,29 @@ public final class DISPLAY {
         FONT_SMALL.drawString(TOTAL_SCORE + total_score,
                 WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(TOTAL_SCORE + total_score) / 2,
                 WINDOW_HEIGHT / 2 + 50);
+        FONT_SMALL.drawString(CONTINUE,
+                WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(CONTINUE) / 2,
+                WINDOW_HEIGHT / 2 + 150);
         FONT_SMALL.drawString(LEVEL_SELECT,
                 WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(LEVEL_SELECT) / 2,
-                WINDOW_HEIGHT / 2 + 150);
+                WINDOW_HEIGHT / 2 + 200);
+
     }
 
-    public final void drawLoseScreen(final int score) {
+    public final void drawLoseScreen(final int score, final int need_score) {
         FONT.drawString(LOSE, WINDOW_WIDTH / 2 - FONT.getWidth(LOSE) / 2,
                 WINDOW_HEIGHT / 2 - 100);
         FONT_SMALL.drawString(SCORE + score, WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(SCORE + score) / 2,
                 WINDOW_HEIGHT / 2);
-        FONT_SMALL.drawString(NEED_SCORE, WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(NEED_SCORE) / 2,
+        FONT_SMALL.drawString(NEED_SCORE_1 + need_score + NEED_SCORE_2,
+                WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(NEED_SCORE_1 + need_score + NEED_SCORE_2) / 2,
                 WINDOW_HEIGHT / 2 + 50);
+        FONT_SMALL.drawString(CONTINUE,
+                WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(CONTINUE) / 2,
+                WINDOW_HEIGHT / 2 + 150);        
         FONT_SMALL.drawString(LEVEL_SELECT,
                 WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(LEVEL_SELECT) / 2,
-                WINDOW_HEIGHT / 2 + 150);
+                WINDOW_HEIGHT / 2 + 200);
     }
 
     public final void drawEndScreen(final int total_score, final int high_score) {
@@ -184,10 +193,11 @@ public final class DISPLAY {
     /* testing note data */
     public final void drawNoteData(final Note note) {
         // draw note data
-        FONT_TEST.drawString("" + note.isActive(), note.getX()+25, note.getY());
-        FONT_TEST.drawString("" + note.getType(), note.getX()+25, note.getY() + 10);
-        //FONT_TEST.drawString("" + note.getY(), note.getX()+25, note.getY() + 10);
-        //FONT_TEST.drawString("" + note.getDelay(), note.getX()+25, note.getY() + 20);
-        //FONT_TEST.drawString("" + (657 - note.getY()), note.getX()+25, note.getY() + 30);
+        FONT_TEST.drawString("" + note.isActive(), note.getX() + 25, note.getY());
+        FONT_TEST.drawString("" + note.getType(), note.getX() + 25, note.getY() + 10);
+        // FONT_TEST.drawString("" + note.getY(), note.getX()+25, note.getY() + 10);
+        // FONT_TEST.drawString("" + note.getDelay(), note.getX()+25, note.getY() + 20);
+        // FONT_TEST.drawString("" + (657 - note.getY()), note.getX()+25, note.getY() +
+        // 30);
     }
 }
