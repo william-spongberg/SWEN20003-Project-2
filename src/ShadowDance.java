@@ -292,6 +292,7 @@ public class ShadowDance extends AbstractGame {
             this.level_ended = false;
 
             this.frame = 0;
+            this.lock_frames = 0;
             this.score = 0;
             this.level_num = 0;
             this.high_level_num = 0;
