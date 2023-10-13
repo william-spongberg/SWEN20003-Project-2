@@ -171,6 +171,7 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
+    // allow user to select level
     private void chooseLevel(final Input input) {
         if (input.wasPressed(Keys.SPACE))
             this.started = false;
@@ -184,6 +185,7 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
+    // if level is unlocked, set level num and start game
     private void checkLevelLock(final int level_choice) {
         if (this.high_level_num >= level_choice) {
             this.level_num = level_choice;
@@ -193,6 +195,7 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
+    // allow user to exit, pause
     private void getState(final Input input) {
         if (input.wasPressed(Keys.ESCAPE)) {
             Window.close();
@@ -202,6 +205,7 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
+    // if not in level end screen, activate level
     private void activateLevel() {
         this.currentLevel = this.levels.get(level_num);
         if (!this.level_ended) {
@@ -210,6 +214,7 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
+    // if active, update level
     private void updateLevel(final Input input) {
         if (this.currentLevel.isActive()) {
             this.disp.drawScore(this.currentLevel.getScore());
@@ -219,6 +224,7 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
+    // if level no longer active, end level
     private void checkLevelInactive() {
         if (!this.currentLevel.isActive()) {
             this.level_ended = true;
@@ -235,6 +241,7 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
+    // if level ended, display win/lose/end screen
     private void checkLevelEnded(final Input input) {
         if (this.level_ended) {
             if (this.currentLevel.hasWin()) {

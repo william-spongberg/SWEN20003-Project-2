@@ -290,7 +290,6 @@ public class Level {
                 this.enemy_frames--;
 
             this.guardian.update(frame, input);
-
             // collide enemies with notes
             for (final Enemy enemy : this.guardian.getEnemies()) {
                 for (Lane lane : this.lanes) {
