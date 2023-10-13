@@ -1,5 +1,12 @@
 import bagel.Image;
 
+/**
+ * The `NoteSpecial` class represents a special note in the game. It implements
+ * the `Note` interface and provides
+ * functionality for updating the note's position on the screen, resetting the
+ * note's attributes, and getting and
+ * setting various attributes of the note.
+ */
 public class NoteSpecial implements Note {
     // images
     private final Image IMAGE_DOUBLE_SCORE = new Image("res/note_special/note2x.png");
@@ -25,6 +32,14 @@ public class NoteSpecial implements Note {
     private boolean visual = false;
     private boolean below_screen = false;
 
+    /**
+     * Constructs a new NoteSpecial object with the given parameters.
+     * 
+     * @param dir   (ignored, set to SPECIAL)
+     * @param type  the type of the note (double score, bomb, speed up, slow down)
+     * @param delay the delay before the note appears on screen
+     * @param x     the x-coordinate of the note's starting position
+     */
     public NoteSpecial(final String dir, final String type, final int delay, final int x) {
         reset(dir, type, delay, x);
     }
@@ -39,25 +54,6 @@ public class NoteSpecial implements Note {
             case STR_BOMB:
                 this.image = IMAGE_BOMB;
                 this.type = BOMB;
-                // if not in special lane, get lane from dir
-                if (dir != "") {
-                    switch (dir) {
-                        case STR_LEFT:
-                            this.dir = LEFT;
-                            break;
-                        case STR_RIGHT:
-                            this.dir = RIGHT;
-                            break;
-                        case STR_UP:
-                            this.dir = UP;
-                            break;
-                        case STR_DOWN:
-                            this.dir = DOWN;
-                            break;
-                        default:
-                            System.out.println("Error: invalid special note");
-                    }
-                }
                 break;
             case STR_SPEED_UP:
                 this.image = IMAGE_SPEED_UP;
@@ -68,15 +64,14 @@ public class NoteSpecial implements Note {
                 this.type = SLOW_DOWN;
                 break;
             default:
-                System.out.println("Error: invalid note");
+                System.out.println("Error: invalid special type");
+                System.exit(-1);
         }
         // set note delay, x coord
         this.delay = delay;
         this.x = x;
     }
 
-    // reset to default values
-    // but keep original type and delay
     public void reset(final Note note) {
         this.image = note.getImage();
         this.dir = note.getDir();
@@ -89,7 +84,6 @@ public class NoteSpecial implements Note {
         this.below_screen = false;
     }
 
-    // update note position
     public void update(final int frame) {
         // if active or visual
         if (this.active || this.visual) {
@@ -100,7 +94,7 @@ public class NoteSpecial implements Note {
                     this.visual = true;
 
                 // calculate y position
-                this.y += REFRESH_60_MULTIPLIER + this.speed;
+                this.y += REFRESH_MULTI + this.speed;
 
                 // draw note
                 this.image.draw(this.x, this.y);

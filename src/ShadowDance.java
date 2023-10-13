@@ -10,10 +10,8 @@ import bagel.Input;
 import bagel.Keys;
 import bagel.Window;
 
-// TODO: remove /* testing */, give to play testers to check for final bugs
-
 /**
- * SWEN20003 Project 1, Semester 2, 2023
+ * SWEN20003 Project 2B, Semester 2, 2023
  * 
  * @author William Spongberg
  */
@@ -25,12 +23,16 @@ public class ShadowDance extends AbstractGame {
     private final Image IMAGE_BACKGROUND = new Image("res/background.png");
 
     // file level names
-    private static final String[] LEVEL_FILES = { "res/level/level1-60.csv", "res/level/level2-60.csv",
+    private static final String[] LEVEL_FILES_60 = { "res/level/level1-60.csv", "res/level/level2-60.csv",
             "res/level/level3-60.csv" };
+    private static final String[] LEVEL_FILES_120 = { "res/level/level1.csv", "res/level/level2.csv",
+            "res/level/level3.csv" };
+    // NOTE: change to LEVEL_FILES_120 to play 120 fps version
+    private static final String[] LEVEL_FILES = LEVEL_FILES_60;
 
     // game logic constants
     private static final int LOCK_FRAMES = 45;
-    private static final int[] WIN_SCORE = {150, 400, 350};
+    private static final int[] WIN_SCORE = { 150, 400, 350 };
 
     // display object
     private final DISPLAY disp = new DISPLAY();
@@ -46,7 +48,7 @@ public class ShadowDance extends AbstractGame {
     private boolean level_ended = false;
     private boolean disp_lock = false;
 
-    // frame counter, frame counters, current grade/special, score, level number
+    // frame counter, frame counters, score, level nums
     private int frame = 0;
     private int lock_frames = 0;
 
@@ -54,8 +56,15 @@ public class ShadowDance extends AbstractGame {
     private int high_score = 0;
 
     private int level_num = 0;
-    private int high_level_num = 3; // allows any level choice for testing
+    private int high_level_num = 0;
 
+    /**
+     * The ShadowDance class represents the main game window for the Shadow Dance
+     * game.
+     * It extends the GameWindow class and initializes the game with the specified
+     * window width, height, and title.
+     * It also adds levels to the game by reading CSV files.
+     */
     public ShadowDance() {
         super(WINDOW_WIDTH, WINDOW_HEIGHT, GAME_TITLE);
 
@@ -65,45 +74,29 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
-    // reads CSV file and returns a Level object
-    private Level readCSV(final String fileName) {
-        // read csv level files from res into arraylist of arrays of strings
-        final List<List<String>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line;
-            // read until end of file
-            while ((line = br.readLine()) != null) {
-                final String[] values = line.split(",");
-                records.add(List.of(values));
-            }
-            // catch and print errors
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
-        return new Level(records);
-    }
-
-    // program entry point
+    /**
+     * The main method of the ShadowDance class.
+     * Creates a new instance of the ShadowDance game and runs it.
+     * 
+     * @param args The command line arguments passed to the program.
+     */
     public static void main(final String[] args) {
         final ShadowDance game = new ShadowDance();
         game.run();
     }
 
     /**
-     * This method updates the game state and draws the appropriate screen based on
-     * the current state.
-     * It draws the background and allows the user to exit or pause the game. If the
-     * game is paused, it draws the pause screen.
-     * If the game is playing, it allows the user to start the game and draws the
-     * start screen. If the game has ended, it allows the user to restart the game
-     * and draws the end screen.
-     * If the game is in progress, it allows the user to restart the game,
-     * increments the frame counter, gets the current level, updates the level if it
-     * is running, and checks if the level has ended to display the appropriate
-     * screen.
-     * This method is called REFRESH_RATE times every second by the Bagel engine
+     * This method is called every frame to update the game state. It draws the
+     * background, allows the user to exit or pause the game, and updates the game
+     * based on the current state (paused, started, ended). If the game is paused,
+     * it draws the pause screen. If the game is started, it displays the start
+     * screen and allows the user to choose a level. If the game is ended, it allows
+     * the user to restart the game and displays the end screen with the final score
+     * and high score. If the game is in progress, it increments the frame counter,
+     * activates the current level, updates the level based on user input, and
+     * checks if the level has ended.
      *
-     * @param input The input object used to get user input.
+     * @param input The user input received from the keyboard.
      */
     @Override
     protected void update(final Input input) {
@@ -122,46 +115,56 @@ public class ShadowDance extends AbstractGame {
             // game started
             if (this.started) {
                 startScreen();
-                // allow user to select level
                 chooseLevel(input);
             }
             // game ended
             else if (this.ended) {
                 // allow user to restart game
                 enableRestart(input);
-                // draw end screen
                 this.disp.drawEndScreen(score, high_score);
             }
             // game in progress
             else {
                 // allow user to restart game
                 enableRestart(input);
-
                 // increment frame counter
                 this.frame++;
 
-                // get current level, activate if not ended
+                // get current level, update level, check if level now ended
                 activateLevel();
-
-                // if current level is running, update
                 updateLevel(input);
-
-                // if current level has now ended, display win/lose/end screen
                 checkLevelEnded(input);
             }
         }
     }
 
+    private Level readCSV(final String fileName) {
+        // read csv level files from res into arraylist of arrays of strings
+        final List<List<String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            // read until end of file
+            while ((line = br.readLine()) != null) {
+                final String[] values = line.split(",");
+                records.add(List.of(values));
+            }
+            // catch and print errors
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+        return new Level(records);
+    }
+
     private void startScreen() {
         this.disp.drawStartScreen();
+        // if completed a level, display continue option
         if (this.high_level_num > 0)
             this.disp.drawContinueOption();
-
+        // if level locked, display level locked
         if (this.disp_lock) {
             this.lock_frames = LOCK_FRAMES;
             this.disp_lock = false;
         }
-
         if (this.lock_frames > 0) {
             this.disp.drawLevelLocked();
             this.lock_frames--;
@@ -169,11 +172,9 @@ public class ShadowDance extends AbstractGame {
     }
 
     private void chooseLevel(final Input input) {
-        // allow user to continue game with space
         if (input.wasPressed(Keys.SPACE))
             this.started = false;
 
-        // allow user to select level with number keys 1 2 3
         if (input.wasPressed(Keys.NUM_1)) {
             checkLevelLock(0);
         } else if (input.wasPressed(Keys.NUM_2)) {
@@ -193,12 +194,9 @@ public class ShadowDance extends AbstractGame {
     }
 
     private void getState(final Input input) {
-        // allow user to exit
         if (input.wasPressed(Keys.ESCAPE)) {
             Window.close();
         }
-
-        // allow user to pause
         if (input.wasPressed(Keys.TAB)) {
             this.paused = !this.paused;
         }
@@ -216,22 +214,18 @@ public class ShadowDance extends AbstractGame {
         if (this.currentLevel.isActive()) {
             this.disp.drawScore(this.currentLevel.getScore());
             this.currentLevel.update(this.frame, input);
-
             // end level if now inactive
             checkLevelInactive();
         }
     }
 
     private void checkLevelInactive() {
-        // if level no longer active
         if (!this.currentLevel.isActive()) {
-            // end level
             this.level_ended = true;
-
-            // calculate if player won level, add score
             if (this.currentLevel.getScore() >= WIN_SCORE[currentLevel.getLevelNum()]) {
                 this.currentLevel.setWin(true);
-                this.high_level_num = this.level_num;
+                if (this.level_num > this.high_level_num)
+                    this.high_level_num = this.level_num;
                 this.score += this.currentLevel.getScore();
                 if (this.score > this.high_score)
                     this.high_score = this.score;
@@ -242,11 +236,9 @@ public class ShadowDance extends AbstractGame {
     }
 
     private void checkLevelEnded(final Input input) {
-        // if level ended, display win/lose/end screen
         if (this.level_ended) {
             if (this.currentLevel.hasWin()) {
                 this.disp.drawWinScreen(this.currentLevel.getScore(), this.score);
-                // allow user to go back to level selection
                 if (input.wasPressed(Keys.ENTER)) {
                     this.level_ended = false;
                     this.currentLevel.setScore(0);
@@ -255,14 +247,12 @@ public class ShadowDance extends AbstractGame {
                     this.frame = 0;
                 }
 
-                // allow user to go to next level
                 if (input.wasPressed(Keys.SPACE)) {
                     this.level_ended = false;
                     // if there are more levels
                     if (this.levels.size() - this.level_num > 1) {
                         this.level_num++;
                         this.frame = 0;
-                        // if no more levels, game ended
                     } else
                         this.ended = true;
                 }
@@ -288,7 +278,6 @@ public class ShadowDance extends AbstractGame {
         }
     }
 
-    // allow user to restart game on key R
     private void enableRestart(final Input input) {
         if (input.wasPressed(Keys.R)) {
             this.started = true;
@@ -307,10 +296,17 @@ public class ShadowDance extends AbstractGame {
     }
 
     /* getters */
+
+    /**
+     * @return the width of the game window
+     */
     public static final int getWidth() {
         return WINDOW_WIDTH;
     }
 
+    /**
+     * @return the height of the game window
+     */
     public static final int getHeight() {
         return WINDOW_HEIGHT;
     }

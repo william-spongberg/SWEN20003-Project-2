@@ -2,8 +2,13 @@ import java.util.List;
 
 import bagel.Image;
 import bagel.Input;
-import bagel.Keys;
 
+/**
+ * The Level class represents a level in the game. It contains information about
+ * the level's images, positions, csv file indices, frame constants, attributes,
+ * grading attributes, guardian object, and display object. It also has methods
+ * to reset the level with new file data and add notes to lanes.
+ */
 public class Level {
     // images
     private final Image IMAGE_LANE_LEFT = new Image("res/lane/laneLeft.png");
@@ -51,12 +56,21 @@ public class Level {
     // display object
     private final DISPLAY disp = new DISPLAY();
 
-    // construct level
+    /**
+     * Constructs a new Level object with the given file data.
+     * 
+     * @param file the file data to use for the level
+     */
     public Level(final List<List<String>> file) {
         reset(file);
     }
 
-    // reset level by csv file data
+    /**
+     * Resets the level with the given file data.
+     * 
+     * @param file The data for the level, in the form of a list of lists of
+     *             strings.
+     */
     public void reset(final List<List<String>> file) {
         // create objects from csv file
         for (final List<String> record : file) {
@@ -80,9 +94,11 @@ public class Level {
                         break;
                     default:
                         System.out.println("Error: invalid lane");
+                        System.exit(-1);
                 }
-                // add notes to lanes
-            } else {
+            }
+            // add notes to lanes
+            else {
                 switch (record.get(INDEX_LANE)) {
                     case Note.STR_LEFT:
                         addNoteToLane(record, Note.LEFT);
@@ -102,11 +118,13 @@ public class Level {
                         break;
                     default:
                         System.out.println("Error: invalid note");
+                        System.exit(-1);
                 }
             }
         }
     }
 
+    // given note info add note to its lane
     private void addNoteToLane(final List<String> record, final int dir) {
         switch (record.get(INDEX_TYPE)) {
             case Note.STR_BOMB:
@@ -123,61 +141,56 @@ public class Level {
                 break;
             default:
                 System.out.println("Error: invalid note type");
+                System.exit(-1);
         }
     }
 
-    // reset level by level object data
+    /**
+     * Resets the level to the initial state.
+     * 
+     * @param level the level to reset to
+     */
     public void reset(final Level level) {
+        // reset lanes
         this.lanes = level.getLanes();
-        // reset notes
         for (final Lane lane : this.lanes) {
             if (lane != null)
                 lane.reset(lane);
         }
+        this.specialType = 0;
 
         this.grade = 0;
         this.score = 0;
         this.win = false;
         this.active = false;
+
+        this.grade_frames = 0;
+        this.special_frames = 0;
+        this.double_frames = 0;
+        this.enemy_frames = ENEMY_FRAMES;
+
+        this.current_grade = 0;
+        this.current_special = 0;
+        this.double_score = false;
+
+        this.guardian = new Guardian();
     }
 
-    // update level
+    /**
+     * Updates the level by updating all lanes, checking for special types, and
+     * updating the score.
+     * 
+     * @param frame the current frame number
+     * @param input the user input
+     */
     public void update(final int frame, final Input input) {
-        // level 3 guardian, enemy, projectiles
-        if (this.level_num == 2) {
-            if (this.enemy_frames == 0) {
-                this.enemy_frames = ENEMY_FRAMES;
-                this.guardian.addEnemy();
-            }
-            else
-                this.enemy_frames--;
-            
-            this.guardian.update(frame, input);
-
-            for (final Enemy enemy : this.guardian.getEnemies()) {
-                // collide with notes
-                for (Lane lane : this.lanes) {
-                    if (lane != null) {
-                        for (Note note : lane.getNotes()) {
-                            if (note.isActive() && note.isVisual()) {
-                                if (enemy.collideNote(note)) {
-                                    note.setActive(false);
-                                    note.setVisual(false);
-                                    System.out.println("Enemy hit note");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }        
+        // level 3 update (if level 3)
+        level3(frame, input);
 
         // reset special type
         this.specialType = 0;
 
-        // display input
-        printInput(input);
-
+        // update lanes
         boolean lanes_active = false;
         for (final Lane lane : this.lanes) {
             this.grade = 0;
@@ -195,23 +208,17 @@ public class Level {
                 }
 
                 // if special type
-                // if speed, go through all notes and update speed
-                // if bomb, go through all visual notes and set to inactive + invisible
-                // if double score, return boolean to super class
-
                 if (this.specialType != 0) {
-                    System.out.println("Special type: " + this.specialType);
                     switch (this.specialType) {
                         case Note.DOUBLE_SCORE:
                             this.double_score = true;
                             this.double_frames = DOUBLE_FRAMES;
-                            // don't add grade 
+                            // don't add grade
                             this.grade = 0;
-                            System.out.println("Double score!");
                             break;
                         case Note.BOMB:
+                            // go through all visual notes and set to inactive + invisible
                             for (final Lane lane_s : this.lanes) {
-                                // if not empty, update
                                 if (lane_s != null) {
                                     for (final Note note : lane_s.getNotes()) {
                                         if (note.isVisual()) {
@@ -223,36 +230,36 @@ public class Level {
                             }
                             // don't add grade
                             this.grade = 0;
-                            System.out.println("Lane Clear!");
                             break;
                         case Note.SPEED_UP:
                             for (final Lane lane_s : this.lanes) {
-                                // if not empty, update
+                                // if not empty, update lane speed
                                 if (lane_s != null)
                                     lane_s.setSpeed(lane_s.getSpeed() + 1);
                             }
-                            System.out.println("Speed up!");
                             break;
                         case Note.SLOW_DOWN:
                             for (final Lane lane_s : this.lanes) {
-                                // if not empty, update
+                                // if not empty, update lane speed
                                 if (lane_s != null)
                                     lane_s.setSpeed(lane_s.getSpeed() - 1);
                             }
-                            System.out.println("Slow down!");
                             break;
                         default:
                             System.out.println("Error: invalid special type");
-                            System.out.println("Special type: " + this.specialType);
+                            System.exit(-1);
                     }
                 }
-                // display/add grade
+                // display grade
                 displayGrade();
 
+                // double the score
                 if (this.double_score) {
                     this.grade *= 2;
                 }
                 this.score += this.grade;
+
+                // display special grade
                 displaySpecial();
             }
 
@@ -268,9 +275,38 @@ public class Level {
             if (lanes[Note.SPECIAL] != null)
                 IMAGE_LANE_SPECIAL.draw(lanes[Note.SPECIAL].getX(), LANE_Y);
         }
-
+        // if no more notes, level inactive
         if (!lanes_active)
             this.active = false;
+    }
+
+    // level 3 logic
+    private void level3(final int frame, final Input input) {
+        if (this.level_num == 2) {
+            if (this.enemy_frames == 0) {
+                this.enemy_frames = ENEMY_FRAMES;
+                this.guardian.addEnemy();
+            } else
+                this.enemy_frames--;
+
+            this.guardian.update(frame, input);
+
+            // collide enemies with notes
+            for (final Enemy enemy : this.guardian.getEnemies()) {
+                for (Lane lane : this.lanes) {
+                    if (lane != null) {
+                        for (Note note : lane.getNotes()) {
+                            if (note.isActive() && note.isVisual()) {
+                                if (enemy.collideNote(note)) {
+                                    note.setActive(false);
+                                    note.setVisual(false);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void displayGrade() {
@@ -284,9 +320,7 @@ public class Level {
         if (this.grade_frames > 0 && this.current_grade != 0) {
             this.disp.drawGrade(this.current_grade);
             this.grade_frames--;
-        }
-        // else reset grade
-        else
+        } else
             this.current_grade = 0;
     }
 
@@ -301,90 +335,101 @@ public class Level {
         if (this.special_frames > 0 && this.current_special != 0) {
             this.disp.drawSpecial(this.current_special);
             this.special_frames--;
-
-            /* testing */
-            System.out.println("Special type: " + current_special);
-        }
-        // else reset special grade
-        else
+        } else
             this.current_special = 0;
 
         // if double score
         if (this.double_frames > 0) {
             this.double_frames--;
-        }
-        // else reset double score
-        else
+        } else
             this.double_score = false;
     }
 
-    /* testing */
-    // print input for testing
-    public void printInput(final Input input) {
-        if (input.wasPressed(Keys.LEFT))
-            System.out.println("Left D");
-        if (input.wasReleased(Keys.LEFT))
-            System.out.println("Left U");
-        if (input.wasPressed(Keys.RIGHT))
-            System.out.println("Right D");
-        if (input.wasReleased(Keys.RIGHT))
-            System.out.println("Right U");
-        if (input.wasPressed(Keys.UP))
-            System.out.println("Up D");
-        if (input.wasReleased(Keys.UP))
-            System.out.println("Up U");
-        if (input.wasPressed(Keys.DOWN))
-            System.out.println("Down D");
-        if (input.wasReleased(Keys.DOWN))
-            System.out.println("Down U");
-        if (input.wasPressed(Keys.SPACE))
-            System.out.println("Space D");
-        if (input.wasReleased(Keys.SPACE))
-            System.out.println("Space U");
-    }
-
     /* getters */
+
+    /**
+     * @return true if the level is active, false otherwise.
+     */
     public Boolean isActive() {
         return this.active;
     }
 
+    /**
+     * @return an array of Lane objects representing the lanes in the level
+     */
     public Lane[] getLanes() {
         return this.lanes;
     }
 
+    /**
+     * @return the score of the level as an Integer
+     */
     public Integer getScore() {
         return this.score;
     }
 
+    /**
+     * @return the grade of the level as an Integer
+     */
     public Integer getGrade() {
         return this.grade;
     }
 
+    /**
+     * @return true if the level has been won, false otherwise
+     */
     public Boolean hasWin() {
         return this.win;
     }
 
+    /**
+     * @return the special type of the level as an Integer
+     */
     public Integer getSpecialType() {
         return this.specialType;
     }
 
+    /**
+     * @return the level number as an Integer.
+     */
     public Integer getLevelNum() {
         return this.level_num;
     }
 
     /* setters */
+
+    /**
+     * Sets the active state of the level.
+     * 
+     * @param active the new active state of the level
+     */
     public void setActive(final Boolean active) {
         this.active = active;
     }
 
+    /**
+     * Sets the score for the level.
+     * 
+     * @param score the score to set
+     */
     public void setScore(final int score) {
         this.score = score;
     }
 
+    /**
+     * Sets the win status of the level.
+     * 
+     * @param win the win status to set
+     */
     public void setWin(final Boolean win) {
         this.win = win;
     }
 
+    /**
+     * Sets the level number for the current level.
+     * 
+     * @param level_num the level number to set
+     */
     public void setLevelNum(final int level_num) {
         this.level_num = level_num;
     }

@@ -1,5 +1,12 @@
 import bagel.Image;
 
+/**
+ * The `NoteNormal` class represents a normal note in the game. It implements
+ * the `Note` interface and provides
+ * functionality for updating the note's position on the screen, resetting the
+ * note's attributes, and getting and
+ * setting various attributes of the note.
+ */
 public class NoteNormal implements Note {
     // images
     private final Image IMAGE_NOTE_LEFT = new Image("res/note_normal/noteLeft.png");
@@ -24,6 +31,14 @@ public class NoteNormal implements Note {
     private boolean visual = false;
     private boolean below_screen = false;
 
+    /**
+     * Constructs a new NoteNormal object with the given parameters.
+     * 
+     * @param dir   the direction of the note (left, right, up, down)
+     * @param type  (ignored, set to NORMAL)
+     * @param delay the delay before the note appears on screen
+     * @param x     the x-coordinate of the note's starting position
+     */
     public NoteNormal(final String dir, final String type, final int delay, final int x) {
         reset(dir, type, delay, x);
     }
@@ -49,14 +64,13 @@ public class NoteNormal implements Note {
                 break;
             default:
                 System.out.println("Error: invalid normal note");
+                System.exit(-1);
         }
         // set note delay, x coord
         this.delay = delay;
         this.x = x;
     }
 
-    // reset to default values
-    // but keep original direction and delay
     public void reset(final Note note) {
         this.image = note.getImage();
         this.dir = note.getDir();
@@ -68,7 +82,6 @@ public class NoteNormal implements Note {
         this.below_screen = false;
     }
 
-    // update note position
     public void update(final int frame) {
         // if active or visual
         if (this.active || this.visual) {
@@ -77,9 +90,9 @@ public class NoteNormal implements Note {
                 // now visual
                 if (!this.visual)
                     this.visual = true;
-                    
+
                 // calculate y position
-                this.y += REFRESH_60_MULTIPLIER + this.speed;
+                this.y += REFRESH_MULTI + this.speed;
 
                 // draw note
                 this.image.draw(this.x, this.y);
@@ -93,6 +106,7 @@ public class NoteNormal implements Note {
     }
 
     /* getters */
+
     public Image getImage() {
         return this.image;
     }
@@ -142,6 +156,7 @@ public class NoteNormal implements Note {
     }
 
     /* setters */
+
     public void setActive(final Boolean active) {
         this.active = active;
     }

@@ -1,6 +1,15 @@
 import bagel.Input;
 import bagel.Keys;
 
+/**
+ * The Grader class is responsible for grading the player's input based on the
+ * distance and direction of the note, and updating the note's state
+ * accordingly.
+ * It contains methods for checking the player's input, grading the input, and
+ * setting the note to graded and not visual.
+ * The class also contains constants for grading, grading scores,
+ * grading distances, and grade y position.
+ */
 public class Grader {
     // grading
     private static final int PERFECT = 0;
@@ -22,7 +31,16 @@ public class Grader {
     private int grade = 0;
     private boolean specialGrade = false;
 
-    // get score from player input
+    /**
+     * Checks the score of a note based on the input and lane direction.
+     * 
+     * @param note     The note to check the score for.
+     * @param input    The input to check against the note.
+     * @param lane_dir The direction of the lane the note is in.
+     * @param holding  Whether or not the note is currently being held.
+     * @return An array containing a boolean indicating if the note is still active
+     *         and a boolean indicating if the note is currently being held.
+     */
     public Boolean[] checkScore(final Note note, final Input input, final int lane_dir, boolean holding) {
         // reset values
         this.grade = 0;
@@ -83,11 +101,11 @@ public class Grader {
             note.setActive(false);
         }
 
-        return new Boolean[] {note.isActive(), holding };
+        return new Boolean[] { note.isActive(), holding };
     }
 
-    // grade player input
-    public Boolean gradeInput(final boolean dir[], final Note note, final double note_y) {
+    // grades the input for normal/hold notes
+    private Boolean gradeInput(final boolean dir[], final Note note, final double note_y) {
         boolean graded = false;
         // if note is on screen
         if (note_y <= NOTE_STATIONARY_Y) {
@@ -106,8 +124,9 @@ public class Grader {
         return graded;
     }
 
-    // grade player input for special note
-    public Boolean gradeSpecialInput(final boolean dir[], final Note note, final double note_y) {
+    
+    // grades the input for special notes
+    private Boolean gradeSpecialInput(final boolean dir[], final Note note, final double note_y) {
         boolean graded = false;
         // if valid input and note is on screen
         if (note_y <= NOTE_STATIONARY_Y) {
@@ -118,20 +137,14 @@ public class Grader {
                 // if within range
                 if (graded = gradeDistance(SPECIAL, note, note_y)) {
                     this.specialGrade = true;
-
-                    /* testing */
-                    System.out.println("grade: " + this.grade + " special: " + this.specialGrade);
-                    System.out.println(
-                            "dir: " + note.getDir() + " type: " + note.getType() + " delay: " + note.getDelay());
                 }
             }
         }
         return graded;
     }
 
-    // grade player input for range grade
-    // and set note to graded + not visual
-    public Boolean gradeDistance(final int grade, final Note note, final double note_y) {
+    // grades the distance of the input from the note
+    private Boolean gradeDistance(final int grade, final Note note, final double note_y) {
         // if in grade range
         if (NOTE_STATIONARY_Y - note_y <= DISTANCE[grade]) {
             this.grade = GRADE[grade];
@@ -142,7 +155,7 @@ public class Grader {
     }
 
     // check for key pressed
-    public boolean[] checkInputPressed(final Input input) {
+    private boolean[] checkInputPressed(final Input input) {
         final boolean dir[] = { false, false, false, false, false };
         if (input.wasPressed(Keys.LEFT))
             dir[Note.LEFT] = true;
@@ -159,7 +172,7 @@ public class Grader {
     }
 
     // check for key released
-    public boolean[] checkInputReleased(final Input input) {
+    private boolean[] checkInputReleased(final Input input) {
         final boolean dir[] = { false, false, false, false, false };
         if (input.wasReleased(Keys.LEFT))
             dir[Note.LEFT] = true;
@@ -174,30 +187,52 @@ public class Grader {
     }
 
     /* getters */
+    
+    /**
+     * @return the grade of the student
+     */
     public int getGrade() {
         return this.grade;
     }
 
+    /** 
+     * @return the perfect grade from the GRADE array.
+     */
     public static int getPerfectGrade() {
         return GRADE[PERFECT];
     }
 
+    /** 
+     * @return the good grade from the GRADE array.
+     */
     public static int getGoodGrade() {
         return GRADE[GOOD];
     }
 
+    /** 
+     * @return the bad grade from the GRADE array.
+     */
     public static int getBadGrade() {
         return GRADE[BAD];
     }
 
+    /** 
+     * @return the miss grade from the GRADE array.
+     */
     public static int getMissGrade() {
         return GRADE[MISS];
     }
 
+    /** 
+     * @return the special grade from the GRADE array.
+     */
     public static int getSpecialGrade() {
         return GRADE[SPECIAL];
     }
 
+    /**
+     * @return true if the grade is special, false otherwise.
+     */
     public Boolean isSpecialGrade() {
         return this.specialGrade;
     }
