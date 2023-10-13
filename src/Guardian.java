@@ -7,14 +7,19 @@ import bagel.Input;
 import bagel.Keys;
 
 public class Guardian extends Entity {
+    // guardian final visual data
     private final Image IMAGE_GUARDIAN = new Image("res/guardian.png");
-
     public static final int X = 800;
     public static final int Y = 600;
 
     // attributes
     private List<Enemy> enemies = new ArrayList<Enemy>();
     private List<Projectile> projectiles = new ArrayList<Projectile>();
+
+    // constuct guardian
+    public Guardian() {
+        reset();
+    }
 
     @Override
     public void update(int frame, Input input) {
@@ -45,6 +50,11 @@ public class Guardian extends Entity {
 
     public void addEnemy() {
         this.enemies.add(new Enemy());
+    }
+
+    private void reset() {
+        this.enemies.clear();
+        this.projectiles.clear();
     }
 
     /* getters */

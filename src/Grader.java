@@ -118,11 +118,6 @@ public class Grader {
                 // if within range
                 if (graded = gradeDistance(SPECIAL, note, note_y)) {
                     this.specialGrade = true;
-
-                    /* testing */
-                    System.out.println("grade: " + this.grade + " special: " + this.specialGrade);
-                    System.out.println(
-                            "dir: " + note.getDir() + " type: " + note.getType() + " delay: " + note.getDelay());
                 }
             }
         }

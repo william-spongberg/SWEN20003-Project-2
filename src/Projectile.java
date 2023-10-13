@@ -7,17 +7,18 @@ import bagel.Input;
 public class Projectile extends Entity {
     private final Image IMAGE_PROJECTILE = new Image("res/arrow.png");
 
-    private static int ENEMY_COLLISION = 62;
+    private static final int ENEMY_COLLISION = 62;
 
     // attributes with default values
     private int x = Guardian.X;
     private int y = Guardian.Y;
     private int speed = 6;
-    private double rotation = 0;
+    private double rotation = -1;
     private Enemy currentEnemy = null;
     private DrawOptions drawOptions = new DrawOptions();
     private boolean hitEnemy = false;
 
+    // construct projectile
     public Projectile(List<Enemy> enemies) {
         if (enemies.size() > 0) {
             // fire projectile towards closest enemy
@@ -38,19 +39,22 @@ public class Projectile extends Entity {
         }
     }
 
+    // update projectile position
     @Override
     public void update(int frame, Input input) {
-        if (this.rotation != 0) {
-            this.x += this.speed * Math.cos(this.rotation);
-            this.y += this.speed * Math.sin(this.rotation);
-        }
+        // if not rotated, no enemies to fire at
+        if ((this.rotation == -1))
+            return;
+        
+        // move projectile
+        this.x += this.speed * Math.cos(this.rotation);
+        this.y += this.speed * Math.sin(this.rotation);
 
         // check for collision with enemy
         if (this.currentEnemy != null) {
             final double distance = Math.sqrt(
                     Math.pow(this.x - this.currentEnemy.getX(), 2) + Math.pow(this.y - this.currentEnemy.getY(), 2));
             if (distance < ENEMY_COLLISION) {
-                // this.currentEnemy = null;
                 this.hitEnemy = true;
             } else
                 this.hitEnemy = false;

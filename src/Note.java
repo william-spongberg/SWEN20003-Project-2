@@ -32,6 +32,8 @@ public interface Note {
     // refresh rate speed multipliers
     public static final int REFRESH_60_MULTIPLIER = 4;
     public static final int REFRESH_120_MULTIPLIER = 2;
+    // NOTE: change to REFRESH_120_MULITPLIER to play 120 fps version
+    public static final int REFRESH_MULTI = REFRESH_60_MULTIPLIER;
 
     // methods
     public void reset(Note note);

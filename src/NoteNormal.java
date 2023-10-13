@@ -49,6 +49,7 @@ public class NoteNormal implements Note {
                 break;
             default:
                 System.out.println("Error: invalid normal note");
+                System.exit(-1);
         }
         // set note delay, x coord
         this.delay = delay;
@@ -56,7 +57,7 @@ public class NoteNormal implements Note {
     }
 
     // reset to default values
-    // but keep original direction and delay
+    // (but keep original direction and delay)
     public void reset(final Note note) {
         this.image = note.getImage();
         this.dir = note.getDir();
@@ -79,7 +80,7 @@ public class NoteNormal implements Note {
                     this.visual = true;
                     
                 // calculate y position
-                this.y += REFRESH_60_MULTIPLIER + this.speed;
+                this.y += REFRESH_MULTI + this.speed;
 
                 // draw note
                 this.image.draw(this.x, this.y);

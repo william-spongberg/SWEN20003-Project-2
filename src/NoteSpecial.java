@@ -55,7 +55,8 @@ public class NoteSpecial implements Note {
                             this.dir = DOWN;
                             break;
                         default:
-                            System.out.println("Error: invalid special note");
+                            System.out.println("Error: invalid special dir");
+                            System.exit(-1);
                     }
                 }
                 break;
@@ -68,7 +69,8 @@ public class NoteSpecial implements Note {
                 this.type = SLOW_DOWN;
                 break;
             default:
-                System.out.println("Error: invalid note");
+                System.out.println("Error: invalid special type");
+                System.exit(-1);
         }
         // set note delay, x coord
         this.delay = delay;
@@ -100,7 +102,7 @@ public class NoteSpecial implements Note {
                     this.visual = true;
 
                 // calculate y position
-                this.y += REFRESH_60_MULTIPLIER + this.speed;
+                this.y += REFRESH_MULTI + this.speed;
 
                 // draw note
                 this.image.draw(this.x, this.y);

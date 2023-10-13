@@ -14,9 +14,6 @@ public final class DISPLAY {
     private final Font FONT_SCORE = new Font(FILE_FONT, 30);
     private final Font FONT_GRADE = new Font(FILE_FONT, 40);
 
-    /* testing */
-    private final Font FONT_TEST = new Font(FILE_FONT, 8);
-
     /* strings */
     // title
     private final static String GAME_TITLE = "SHADOW DANCE";
@@ -123,6 +120,7 @@ public final class DISPLAY {
                     WINDOW_HEIGHT / 2);
         } else {
             System.out.println("Error: invalid special type");
+            System.exit(-1);
         }
     }
 
@@ -139,6 +137,7 @@ public final class DISPLAY {
         } else if (grade == Grader.getSpecialGrade()) {
         } else {
             System.out.println("Error: invalid grade");
+            System.exit(-1);
         }
     }
 
@@ -188,16 +187,5 @@ public final class DISPLAY {
         FONT_SMALL.drawString(GAME_RESTART,
                 WINDOW_WIDTH / 2 - FONT_SMALL.getWidth(GAME_RESTART) / 2,
                 WINDOW_HEIGHT / 2 + 150);
-    }
-
-    /* testing note data */
-    public final void drawNoteData(final Note note) {
-        // draw note data
-        FONT_TEST.drawString("" + note.isActive(), note.getX() + 25, note.getY());
-        FONT_TEST.drawString("" + note.getType(), note.getX() + 25, note.getY() + 10);
-        // FONT_TEST.drawString("" + note.getY(), note.getX()+25, note.getY() + 10);
-        // FONT_TEST.drawString("" + note.getDelay(), note.getX()+25, note.getY() + 20);
-        // FONT_TEST.drawString("" + (657 - note.getY()), note.getX()+25, note.getY() +
-        // 30);
     }
 }

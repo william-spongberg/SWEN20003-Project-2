@@ -18,19 +18,17 @@ public class Lane {
     // grader object
     private final Grader grader = new Grader();
 
-    /* testing */
-    private boolean display = true;
-
-
+    // construct lane
     public Lane(final int dir, final int x) {
         this.dir = dir;
         this.x = x;
         this.active = true;
     }
 
+    // reset by lane object data
     public void reset(final Lane lane) {
-        this.notes = lane.getNotes();
         // reset notes
+        this.notes = lane.getNotes();
         for (final Note note : this.notes) {
             note.reset(note);
         }
@@ -46,50 +44,28 @@ public class Lane {
         this.holding = false;
     }
 
+    // add note to self
     public void addNote(final Note note) {
         this.notes.add(note);
         if (this.currentNote == null)
             this.currentNote = this.notes.get(0);
     }
 
+    // update lane
     public void update(final int frame, final Input input) {
         this.specialType = 0;
         this.grade = 0;
 
         if (this.active) {
-
-            /* testing */
-            // private final DISPLAY disp = new DISPLAY();
-            // display note data
-            // disp.drawNoteData(this.currentNote);
-
-            // draw current note data to system
-            //System.out.println("Current note: " + this.currentNote.getDir() + " " + this.currentNote.getType() + " "
-            //        + this.currentNote.getY());
-
-            // print note data
-            if (this.display) {
-                System.out.println("dir|type|delay");
-                for (final Note note : this.notes)
-                    System.out.println(note.getDir() + " " + note.getType() + " " + note.getDelay());
-                this.display = false;
-            }
-
             // if current note is active
             if (this.currentNote.isActive()) {
+                // grade note
                 final Boolean[] temp = grader.checkScore(this.currentNote, input, this.dir, this.holding);
-                
-                // update grade
-                this.grade = grader.getGrade();
-
-                /* testing */
-                if (this.grade == Grader.getMissGrade())
-                    System.out.println(dir + " miss");
-                if (this.holding != temp[1])
-                    System.out.println(dir + " holding: " + this.holding + " -> " + temp[1]);
-                
                 this.currentNote.setActive(temp[0]);
                 this.holding = temp[1];
+
+                // update grade
+                this.grade = grader.getGrade();
             }
 
             // if current note now inactive

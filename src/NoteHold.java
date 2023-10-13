@@ -49,6 +49,7 @@ public class NoteHold implements Note {
                 break;
             default:
                 System.out.println("Error: invalid hold note");
+                System.exit(-1);
         }
         // set note delay, x coord
         this.delay = delay;
@@ -79,7 +80,7 @@ public class NoteHold implements Note {
                     this.visual = true;
 
                 // calculate y position
-                this.y += REFRESH_60_MULTIPLIER + this.speed;
+                this.y += REFRESH_MULTI + this.speed;
 
                 // draw note
                 this.image.draw(this.x, this.y);
